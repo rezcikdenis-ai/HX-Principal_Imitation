@@ -1,17 +1,18 @@
-module Aplhabet where
+{-# LANGUAGE DerivingStrategies #-}
+module Alphabet where
 
 import Data.Char (isAsciiUpper, isAsciiLower, toUpper, ord, chr)
 import Data.Maybe (mapMaybe)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
-
+import Types
 
 ----------Предикаты
 isValidPosition :: Position -> Bool
 isValidPosition p = p >= 0 && p <= 40
 
 isValidChar :: Char -> Bool
-isValidChar = isAsciiUpper || isAsciiLower
+isValidChar с = isAsciiUpper с || isAsciiLower с
 
 ----------Преобразования
 
@@ -31,7 +32,7 @@ normalizeText = mapMaybe normalizeChar
 normalizeChar :: Char -> Maybe Char
 normalizeChar c
     | isValidChar c = Just (toUpper c)
-    | Otherwise = Nothing
+    | otherwise = Nothing
 
 ----------Готовые наборы позиций
 

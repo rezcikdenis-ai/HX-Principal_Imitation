@@ -25,6 +25,9 @@ source-repository head
 
 library
   exposed-modules:
+      Alphabet
+      Modifier
+      Rotor
       Types
   other-modules:
       Paths_HX

@@ -1,12 +1,15 @@
+{-# LANGUAGE DerivingStrategies #-}
 module Rotor where
 
 import Data.List (sort)
-import Data.Maybe (mapMaybe)
+import Data.Maybe (fromMaybe)
 import Data.Vector(Vector, (!), (//))
 import qualified Data.Vector as V
 
 import Types
 import Alphabet
+
+
 
 --------Создание и валидация
 
@@ -26,7 +29,7 @@ mkPins v
 
 --Создание ротора
 --безопасная версия
-mkRotor :: Wiring -> Pins -> Positions -> Maybe Rotor
+mkRotor :: Wiring -> Pins -> Position -> Maybe Rotor
 mkRotor wiring pins pos = do
     w <- mkWiring wiring
     p <- mkPins pins
@@ -36,7 +39,7 @@ mkRotor wiring pins pos = do
 
 --Небезопасная версия(для, например, QuickCheck или внутри генератора случайных ключей)
 
-unsafemkRotor :: Wiring -> Pins -> Positions -> Rotor
+unsafemkRotor :: Wiring -> Pins -> Position -> Rotor
 unsafemkRotor wiring pins pos = 
     fromMaybe (error "HX63.Rotor.unsafeMkRotor: invalid rotor data")
         (mkRotor wiring pins pos)
