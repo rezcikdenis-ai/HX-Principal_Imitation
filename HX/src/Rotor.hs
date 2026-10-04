@@ -39,8 +39,8 @@ mkRotor wiring pins pos = do
 
 --Небезопасная версия(для, например, QuickCheck или внутри генератора случайных ключей)
 
-unsafemkRotor :: Wiring -> Pins -> Position -> Rotor
-unsafemkRotor wiring pins pos = 
+unsafeMkRotor :: Wiring -> Pins -> Position -> Rotor
+unsafeMkRotor wiring pins pos = 
     fromMaybe (error "HX63.Rotor.unsafeMkRotor: invalid rotor data")
         (mkRotor wiring pins pos)
 
