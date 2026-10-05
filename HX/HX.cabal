@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Alphabet
+      Config
       Key
       Machine
       Modifier
@@ -41,8 +42,11 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
     , containers
+    , directory
     , mtl
     , random
     , vector
@@ -59,8 +63,11 @@ executable HX-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HX
+    , aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
+    , directory
     , mtl
     , random
     , vector
@@ -78,8 +85,11 @@ test-suite HX-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HX
+    , aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
+    , directory
     , mtl
     , random
     , vector

@@ -24,6 +24,10 @@ dependencies:
 - containers
 - mtl
 - vector
+- random
+- aeson
+- bytestring
+- directory
 
 ghc-options:
 - -Wall

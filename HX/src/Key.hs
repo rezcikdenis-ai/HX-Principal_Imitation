@@ -101,3 +101,58 @@ generateMessageKey g0 =
             let (p, g') = randomR (0, alphabetSize - 1) g
             in go (n - 1) g' (p : acc)
     in go numRotors g0 []
+
+--Случайный входной модификатор
+generateInputModifier :: RandomGen g => g -> (Modifier, g)
+generateInputModifier g0 =
+    let (perm, g1) = shuffle allLetters g0
+        m = case mkInputModifier (V.fromList perm) of
+            Just x  -> x
+            Nothing -> identityModifier
+    in (m, g1)
+
+--Случайный reentry модификатор
+generateReentryModifier :: RandomGen g => g -> (Modifier, g)
+generateReentryModifier g0 =
+    let (perm, g1) = shuffle allReentry g0
+        m = case mkReentryModifier (V.fromList perm) of
+            Just x  -> x
+            Nothing -> identityModifier
+    in (m, g1)
+
+--Тожд.проводка и штифты
+generateRotor :: RandomGen g => g -> (Rotor, g)
+generateRotor g0 =
+    let (pins, g1) = generatePins g0
+        r = case mkRotor identityWiring pins 0 of
+            Just x  -> x
+            Nothing -> unsafeMkRotor identityWiring emptyPins 0
+    in (r, g1)
+
+--------Случайный внутренний ключ
+generateInternalKey :: RandomGen g => g -> (InternalKey, g)
+generateInternalKey g0 =
+  let (rotors, g1) = generateRotors numRotors g0
+      (inMod,  g2) = generateInputModifier g1
+      (reMod,  g3) = generateReentryModifier g2
+  in ( InternalKey
+         { ikRotors          = rotors
+         , ikInputModifier   = inMod
+         , ikReentryModifier = reMod
+         , ikSteppingControl = successiveControl
+         }
+     , g3
+     )
+  where
+    generateRotors 0 g = ([], g)
+    generateRotors n g =
+      let (r, g')   = generateRotor g
+          (rs, g'') = generateRotors (n - 1) g'
+      in (r : rs, g'')
+
+--Случайная пара ключей
+generateKeyPair :: RandomGen g => g -> (InternalKey, MessageKey, g)
+generateKeyPair g0 =
+    let (ik, g1) = generateInternalKey g0
+        (mk, g2) = generateMessageKey g1
+    in (ik, mk, g2)
