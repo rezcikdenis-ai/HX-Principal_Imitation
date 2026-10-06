@@ -132,23 +132,20 @@ generateRotor g0 =
 --------Случайный внутренний ключ
 generateInternalKey :: RandomGen g => g -> (InternalKey, g)
 generateInternalKey g0 =
-  let (rotors, g1) = generateRotors numRotors g0
-      (inMod,  g2) = generateInputModifier g1
-      (reMod,  g3) = generateReentryModifier g2
-  in ( InternalKey
-         { ikRotors          = rotors
-         , ikInputModifier   = inMod
-         , ikReentryModifier = reMod
-         , ikSteppingControl = successiveControl
-         }
-     , g3
-     )
-  where
-    generateRotors 0 g = ([], g)
-    generateRotors n g =
-      let (r, g')   = generateRotor g
-          (rs, g'') = generateRotors (n - 1) g'
-      in (r : rs, g'')
+    let (rotors, g1) = generateRotors numRotors g0
+        (inMod,  g2) = generateInputModifier g1
+        (reMod,  g3) = generateReentryModifier g2
+    in (InternalKey
+         {ikRotors = rotors,
+         ikInputModifier = inMod,
+         ikReentryModifier = reMod,
+         ikSteppingControl = successiveControl}, g3)
+    where
+        generateRotors 0 g = ([], g)
+        generateRotors n g =
+            let (r, g')   = generateRotor g
+                (rs, g'') = generateRotors (n - 1) g'
+            in (r : rs, g'')
 
 --Случайная пара ключей
 generateKeyPair :: RandomGen g => g -> (InternalKey, MessageKey, g)
