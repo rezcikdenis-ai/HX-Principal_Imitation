@@ -9,6 +9,7 @@ import Types
 import Key
 import Config
 import Machine
+import Log
 
 --Точка входа
 main :: IO ()
@@ -19,7 +20,9 @@ main = do
         ("help":_) -> usage >> exitSuccess
         ("-h":_) -> usage >> exitSuccess
         ("--help":_) -> usage >> exitSuccess
-        (cmd:rest) -> runCommand cmd rest
+        (cmd:rest) -> do 
+            logAction $ "команда: " ++ cmd ++ " " ++ unwords rest
+            runCommand cmd rest
 
 usage :: IO ()
 usage = putStrLn $ unlines
@@ -57,18 +60,23 @@ requireOpt label names args =
     case getOptAny names args of
         Just v  -> pure v
         Nothing -> do
-            hPutStrLn stderr $ "Не указана обязательная опция: " ++ label
+            let msg = "Не указана обязательная опция: " ++ label
+            hPutStrLn stderr msg
+            logAction $ "ошибка: " ++ msg
             usage
             exitFailure
+
 
 --------Команды
 
 runCommand :: String -> [String] -> IO ()
 runCommand "gen-key" args = cmdGenKey args
-runCommand "encrypt" args = cmdCrypt encryptText args
-runCommand "decrypt" args = cmdCrypt decryptText args
+runCommand "encrypt" args = cmdCrypt "encrypt" encryptText args
+runCommand "decrypt" args = cmdCrypt "decrypt" decryptText args
 runCommand other _ = do
-    hPutStrLn stderr $ "Неизвестная команда: " ++ other
+    let msg = "Неизвестная команда: " ++ other
+    hPutStrLn stderr msg
+    logAction $ "ошибка: " ++ msg
     usage
     exitFailure
 
@@ -82,39 +90,51 @@ cmdGenKey args = do
     let (ik, mk, _) = generateKeyPair g
     saveInternalKey internalPath ik >>= report
     saveMessageKey messagePath mk >>= report
+    logAction $ "gen-key: ключи записаны"
     putStrLn $ "Ключи записаны:\n  internal: " ++ internalPath ++ "\n  message:  " ++ messagePath
 
 --Кодирование или декодирование текстового файла
-cmdCrypt :: (MachineState -> String -> (String, MachineState)) -> [String] -> IO ()
-cmdCrypt transform args = do
+cmdCrypt :: String -> (MachineState -> String -> (String, MachineState)) -> [String] -> IO ()
+cmdCrypt mode transform args = do
     internalPath <- requireOpt "--internal" ["--internal"] args
     messagePath  <- requireOpt "--message"  ["--message"] args
     inputPath <- requireOpt "-i/--input" ["-i", "--input"] args
     outputPath <- requireOpt "-o/--output" ["-o", "--output"] args
-
+    logAction $ mode ++ ": internal=" ++ internalPath
+               ++ " message=" ++ messagePath
+               ++ " input=" ++ inputPath
+               ++ " output=" ++ outputPath
     ik <- loadInternalKey internalPath >>= unwrap
     mk <- loadMessageKey messagePath >>= unwrap
     ms <- case setupMachine ik mk of
         Just st -> pure st
         Nothing -> do
-            hPutStrLn stderr "Пара ключей невалидна (структура или подстановка букв)."
+            let msg = "Пара ключей невалидна (структура или подстановка букв)."
+            hPutStrLn stderr msg
+            logAction $ "ошибка: " ++ msg
             exitFailure
 
     text <- readPlaintext inputPath >>= unwrap
     let (result, _) = transform ms text
     writeCiphertext outputPath result >>= report
+    logAction $ mode ++ ": успех, символов=" ++ show (length result)
+               ++ " -> " ++ outputPath
     putStrLn $ "Готово → " ++ outputPath
 
 -------Вспомогательные функции
 unwrap :: Either ConfigError a -> IO a
 unwrap (Right x) = pure x
 unwrap (Left e) = do
-    hPutStrLn stderr (displayConfigError e)
+    let msg = displayConfigError e
+    hPutStrLn stderr msg
+    logAction $ "ошибка: " ++ msg
     exitFailure
 
 report :: Either ConfigError () -> IO ()
 report (Right ()) = pure ()
 report (Left e) = do
-    hPutStrLn stderr (displayConfigError e)
+    let msg = displayConfigError e
+    hPutStrLn stderr msg
+    logAction $ "ошибка: " ++ msg
     exitFailure
 

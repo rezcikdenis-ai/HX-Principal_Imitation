@@ -120,14 +120,23 @@ generateReentryModifier g0 =
             Nothing -> identityModifier
     in (m, g1)
 
---Тожд.проводка и штифты
+
+--Случайная проводка(перестановка от 0 до 40)
+generateWiring :: RandomGen g => g -> (Wiring, g)
+generateWiring g0 =
+  let (perm, g1) = shuffle allPositions g0
+  in (V.fromList perm, g1)
+
+  
+--Случайная проводка и случайные штифты в одном роторе 
 generateRotor :: RandomGen g => g -> (Rotor, g)
 generateRotor g0 =
-    let (pins, g1) = generatePins g0
-        r = case mkRotor identityWiring pins 0 of
+    let (pins, g2) = generatePins g0
+        (wiring, g1) = generateWiring g0
+        r = case mkRotor wiring pins 0 of
             Just x  -> x
             Nothing -> unsafeMkRotor identityWiring emptyPins 0
-    in (r, g1)
+    in (r, g2)
 
 --------Случайный внутренний ключ
 generateInternalKey :: RandomGen g => g -> (InternalKey, g)

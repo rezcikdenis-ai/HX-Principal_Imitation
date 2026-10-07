@@ -28,6 +28,7 @@ dependencies:
 - aeson
 - bytestring
 - directory
+- time
 
 ghc-options:
 - -Wall
@@ -64,3 +65,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - HX
+    - hspec
+    - QuickCheck 

@@ -1,6 +1,6 @@
 {-# LANGUAGE DerivingStrategies #-}
 module SignalPath where
-import Data.List(sort)
+import Data.List(sort, elemIndex)
 import Data.Vector (Vector, (!), (//))
 import qualified Data.Vector as V
 
@@ -33,7 +33,12 @@ backwardRotors rotors p = foldl (\acc r -> backward r acc) p (reverse rotors)
 --Таблица подстановки для букв в текущем состоянии
 buildSubstitution :: MachineState -> Vector Position
 buildSubstitution ms = 
-    V.generate (letterMax - letterMin + 1) $ \i -> signalPath ms i
+    let vals = [signalPath ms i | i <- [0..25]]
+        order = sort vals
+        rank v = case elemIndex v order of
+            Just r -> r
+            Nothing -> 0
+    in V.fromList (map rank vals)
 
 --Обратная подстановка
 inverseSubstitution :: Vector Position -> Vector Position
